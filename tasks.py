@@ -25,12 +25,15 @@ def process_send_notifications():
 
     :returns ?:
     """
+    helpers.log("fetching messages that need a notification to be sent ...")
     q = construct_needs_mail_query(PUBLIC_GRAPH, MAX_AGE) #?bericht ?conversatieuuid ?van ?ontvangen ?dossiernummer ?betreft ?mailadres
     berichten = helpers.query(q)['results']['bindings']
+    helpers.log("found {} berichten. Processing ...".format(len(berichten)))
     for bericht in berichten:
         subject = "Dossier {}:'{}' - Nieuw bericht".format(bericht['dossiernummer'], bericht['betreft'])
         link = "https://loket.lokaalbestuur.vlaanderen.be/berichten/{}".format(bericht['conversatieuuid'])
         content = "Nieuw bericht: {}".format(link) ## TEMP: stub
         email = new_email(FROM_ADDRESS, bericht['mailadres'], subject, content)
+        helpers.log("placing bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(PUBLIC_GRAPH, email, os.environ.get('OUTBOX_FOLDER_URI'))
         helpers.update(insert_q)
