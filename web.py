@@ -5,7 +5,7 @@ from .tasks import process_send_notifications
 
 INTERVAL = 5 if os.environ.get('RUN_INTERVAL') is None else os.environ.get('RUN_INTERVAL')
 
-# schedule.every(INTERVAL).minutes.do(process_berichten_in)
+# schedule.every(INTERVAL).minutes.do(process_send_notifications)
 log("Registered a task for fetching and processing messages from Kalliope every {} minutes".format(INTERVAL))
 
 
