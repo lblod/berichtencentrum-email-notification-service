@@ -37,3 +37,7 @@ def process_send_notifications():
         helpers.log("placing bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(PUBLIC_GRAPH, email, os.environ.get('OUTBOX_FOLDER_URI'))
         helpers.update(insert_q)
+        # Conditional on above query?
+        insert_q2 = construct_mail_sent_query(PUBLIC_GRAPH, bericht['bericht'], "http://data.lblod.info/id/emails/{}".format(email['uuid']))
+        helpers.update(insert_q2)
+        
