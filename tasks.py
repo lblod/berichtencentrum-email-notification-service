@@ -30,14 +30,14 @@ def process_send_notifications():
     berichten = helpers.query(q)['results']['bindings']
     helpers.log("found {} berichten. Processing ...".format(len(berichten)))
     for bericht in berichten:
-        subject = "Dossier {}:'{}' - Nieuw bericht".format(bericht['dossiernummer'], bericht['betreft'])
-        link = "https://loket.lokaalbestuur.vlaanderen.be/berichten/{}".format(bericht['conversatieuuid'])
+        subject = "Dossier {}:'{}' - Nieuw bericht".format(bericht['dossiernummer']['value'], bericht['betreft']['value'])
+        link = "https://loket.lokaalbestuur.vlaanderen.be/berichten/{}".format(bericht['conversatieuuid']['value'])
         content = "Nieuw bericht: {}".format(link) ## TEMP: stub
-        email = new_email(FROM_ADDRESS, bericht['mailadres'], subject, content)
+        email = new_email(FROM_ADDRESS, bericht['mailadres']['value'], subject, content)
         helpers.log("placing bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(PUBLIC_GRAPH, email, os.environ.get('OUTBOX_FOLDER_URI'))
         helpers.update(insert_q)
         # Conditional on above query?
-        insert_q2 = construct_mail_sent_query(PUBLIC_GRAPH, bericht['bericht'], "http://data.lblod.info/id/emails/{}".format(email['uuid']))
+        insert_q2 = construct_mail_sent_query(PUBLIC_GRAPH, bericht['bericht']['value'], "http://data.lblod.info/id/emails/{}".format(email['uuid']))
         helpers.update(insert_q2)
         
