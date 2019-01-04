@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 
-def construct_needs_mail_query(graph_uri, max_bericht_age=7):
+def construct_needs_mail_query(message_graph_pattern_start, message_graph_pattern_end, max_bericht_age=7):
     """
     Construct a query for retrieving all berichten that require a mail notification to be sent for.
 
-    :param graph_uri: string
     :param max_bericht_age: int, specifies how old a message (in days) can maximally be.
         In case the messages are older they are not considered, as the emails that were sent for them may be already deleted again for example.
     """
@@ -18,7 +17,12 @@ def construct_needs_mail_query(graph_uri, max_bericht_age=7):
 
     SELECT ?bericht ?van ?ontvangen ?dossiernummer ?conversatieuuid ?betreft ?mailadres
     WHERE {{
-        GRAPH <{0}> {{
+        GRAPH ?h {{
+            ?naar a besluit:Bestuurseenheid;
+                ext:wilMailOntvangen "true";
+                ext:mailAdresVoorNotificaties ?mailadres.
+        }}
+        GRAPH ?g {{
             ?bericht a schema:Message;
                 schema:dateReceived ?ontvangen;
                 schema:text ?inhoud;
@@ -33,14 +37,13 @@ def construct_needs_mail_query(graph_uri, max_bericht_age=7):
                 #schema:processingTime ?reactietermijn;
                 schema:hasPart ?bericht.
 
-            ?naar a besluit:Bestuurseenheid;
-                ext:wilMailOntvangen true;
-                ext:mailAdresVoorNotificaties ?mailadres.
             FILTER NOT EXISTS {{ ?bericht ext:notificatieEmail ?email. }}  # TODO: predicate?
-            FILTER (?ontvangen > "{1}"^^xsd:dateTime)
+            FILTER (?ontvangen > "{2}"^^xsd:dateTime)
         }}
+        FILTER(STRSTARTS(STR(?g), "{0}"))
+        FILTER(STRENDS(STR(?g), "{1}"))
     }}
-    """.format(graph_uri, oldest)
+    """.format(message_graph_pattern_start, message_graph_pattern_end, oldest)
     return q
 
 def construct_mail_sent_query(graph_uri, bericht_uri, email_uri):
@@ -75,7 +78,7 @@ def construct_mail_sent_query(graph_uri, bericht_uri, email_uri):
 
 def construct_mail_query(graph_uri, email, outbox_folder_uri):
     """
-    Construct a query for creating a new email and linking it to the right outbox. This way the mail wil be
+    Construct a query for creating a new email and linking it to the right outbox. This way the mail will be
     picked up by the mail sending service and delivered.
 
     :param graph_uri: string

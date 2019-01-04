@@ -21,16 +21,19 @@ from .queries import construct_mail_query
 from .mocks import mock_email
 
 ABB_URI = "http://data.lblod.info/id/bestuurseenheden/141d9d6b-54af-4d17-b313-8d1c30bc3f5b"
-PUBLIC_GRAPH = "http://mu.semte.ch/graphs/public"
+MESSAGE_GRAPH_PATTERN_START = "http://mu.semte.ch/graphs/organizations/"
+MESSAGE_GRAPH_PATTERN_END = "/LoketLB-berichtenGebruiker"
+MAX_AGE = 60
+SYSTEM_EMAIL_GRAPH = "http://mu.semte.ch/graphs/system/email"
 OUTBOX_FOLDER_URI = os.environ.get('OUTBOX_FOLDER_URI') or "http://data.lblod.info/id/mail-folders/2"
 
 @app.route('/needs_mail/')
 def needs_mail():
-    q = construct_needs_mail_query(PUBLIC_GRAPH, 7)
+    q = construct_needs_mail_query(MESSAGE_GRAPH_PATTERN_START, MESSAGE_GRAPH_PATTERN_END, MAX_AGE)
     return flask.jsonify(helpers.query(q))
 
 @app.route("/mock_insert")
 def mock():
     e = mock_email()
-    q = construct_mail_query(PUBLIC_GRAPH, e, OUTBOX_FOLDER_URI)
+    q = construct_mail_query(SYSTEM_EMAIL_GRAPH, e, OUTBOX_FOLDER_URI)
     return flask.jsonify(helpers.update(q))
