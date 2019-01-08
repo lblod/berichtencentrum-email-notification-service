@@ -14,8 +14,12 @@ OUTBOX_FOLDER_URI = "http://data.lblod.info/id/mail-folders/2"
 MAX_AGE = 60 #days
 FROM_ADDRESS = "binnenland@vlaanderen.be"
 
-authClient = SPARQLWrapper(os.environ.get('MU_SPARQL_ENDPOINT'), returnFormat=JSON)
-authClient.customHttpHeaders = { "mu-auth-sudo": True }
+sparqlQuery = SPARQLWrapper(os.environ.get('MU_SPARQL_ENDPOINT'), returnFormat=JSON)
+sparqlQuery.customHttpHeaders = { "mu-auth-sudo": True }
+
+sparqlUpdate = SPARQLWrapper(os.environ.get('MU_SPARQL_UPDATEPOINT'), returnFormat=JSON)
+sparqlUpdate.customHttpHeaders = { "mu-auth-sudo": True }
+sparqlUpdate.method = 'POST'
 
 def new_email(email_from, to, subject, content):
     email = {}
@@ -35,7 +39,7 @@ def process_send_notifications():
 
     helpers.log("fetching messages that need a notification to be sent ...")
     q = construct_needs_mail_query(MESSAGE_GRAPH_PATTERN_START, MESSAGE_GRAPH_PATTERN_END, MAX_AGE) #?bericht ?conversatieuuid ?van ?ontvangen ?dossiernummer ?betreft ?mailadres
-    berichten = helpers.query(q)['results']['bindings']
+    berichten = query(q)['results']['bindings']
     helpers.log("found {} berichten. Processing ...".format(len(berichten)))
     for bericht in berichten:
         subject = "Dossier {}:'{}' - Nieuw bericht".format(bericht['dossiernummer']['value'], bericht['betreft']['value'])
@@ -44,14 +48,22 @@ def process_send_notifications():
         email = new_email(FROM_ADDRESS, bericht['mailadres']['value'], subject, content)
         helpers.log("placing bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(SYSTEM_EMAIL_GRAPH, email, OUTBOX_FOLDER_URI)
-        helpers.update(insert_q)
+        update(insert_q)
         # Conditional on above query?
-        insert_q2 = construct_mail_sent_query(SYSTEM_EMAIL_GRAPH, bericht['bericht']['value'], "http://data.lblod.info/id/emails/{}".format(email['uuid']))
-        helpers.update(insert_q2)
+        helpers.log("setting bericht as sent")
+        insert_q2 = construct_mail_sent_query(SYSTEM_EMAIL_GRAPH, bericht['bericht']['value'], email['uuid'])
+        update(insert_q2)
 
 def query(the_query):
     """Execute the given SPARQL query (select/ask/construct)on the tripple store and returns the results
     in the given returnFormat (JSON by default)."""
-    log("execute query: \n" + the_query)
-    authClient.setQuery(the_query)
-    return authClient.query().convert()
+    helpers.log("execute query: \n" + the_query)
+    sparqlQuery.setQuery(the_query)
+    return sparqlQuery.query().convert()
+
+def update(the_query):
+    """Execute the given SPARQL query on the tripple store and returns the results
+    in the given returnFormat (JSON by default)."""
+    helpers.log("update query: \n" + the_query)
+    sparqlUpdate.setQuery(the_query)
+    return sparqlUpdate.query().convert()
