@@ -1,5 +1,5 @@
 FROM mikidi/mu-python-template:python3-port
-MAINTAINER Michaël Dierick <michael.dierick@redpencil.io>
+LABEL maintainer="info@redpencil.io"
 
 ENV MU_APPLICATION_GRAPH "http://mu.semte.ch/graphs/public"
 ENV MU_SPARQL_ENDPOINT "http://virtuoso:8890/sparql"
