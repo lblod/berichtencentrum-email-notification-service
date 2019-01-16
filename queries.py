@@ -62,7 +62,7 @@ def construct_mail_sent_query(graph_uri, bericht_uri, email_uuid):
 
     INSERT {{
         GRAPH ?g {{
-            ?bericht ext:notificatieEmail ?email. # TODO: predicate?
+            <{1}> ext:notificatieEmail ?email. # TODO: predicate?
         }}
     }}
     WHERE {{
@@ -71,8 +71,7 @@ def construct_mail_sent_query(graph_uri, bericht_uri, email_uuid):
             ?email <http://mu.semte.ch/vocabularies/core/uuid> "{2}".
         }}
         GRAPH ?g {{
-            ?bericht a schema:Message.
-            BIND(IRI("{1}") AS ?bericht).
+            <{1}> a schema:Message.
         }}
         FILTER(STRSTARTS(STR(?g), "http://mu.semte.ch/graphs/organizations/"))
         FILTER(STRENDS(STR(?g), "/LoketLB-berichtenGebruiker"))
@@ -99,7 +98,7 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
 
     INSERT {{
         GRAPH <{0}> {{
-            ?email a nmo:Email;
+            <{1[uri]}> a nmo:Email;
                 <http://mu.semte.ch/vocabularies/core/uuid> "{1[uuid]}";
                 nmo:messageFrom "{1[from]}";
                 nmo:emailTo "{1[to]}";
@@ -110,15 +109,13 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     else: #then at least plain text content should exist
         q += """nmo:plainTextMessageContent "{1[content]}";"""
     q += """
-                nmo:isPartOf ?outbox.
-            ?outbox email:hasEmail ?email.
+                nmo:isPartOf <{2}>.
+            <{2}> email:hasEmail <{1[uri]}>.
         }}
     }}
     WHERE {{
         GRAPH <{0}> {{
-            ?outbox a nfo:Folder.
-            BIND(IRI("{2}") AS ?outbox)
-            BIND(IRI(CONCAT("http://data.lblod.info/id/emails/", "{1[uuid]}")) AS ?email)
+            <{2}> a nfo:Folder.
         }}
     }}
     """

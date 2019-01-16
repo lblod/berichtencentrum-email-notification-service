@@ -46,6 +46,7 @@ def process_send_notifications():
         link = "https://loket.lokaalbestuur.vlaanderen.be/berichten/{}".format(bericht['conversatieuuid']['value'])
         content = "Nieuw bericht: {}".format(link) ## TEMP: stub
         email = new_email(FROM_ADDRESS, bericht['mailadres']['value'], subject, content)
+        email['uri'] = "http://data.lblod.info/id/emails/{}".format(email['uuid'])
         helpers.log("placing bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(SYSTEM_EMAIL_GRAPH, email, OUTBOX_FOLDER_URI)
         update(insert_q)
