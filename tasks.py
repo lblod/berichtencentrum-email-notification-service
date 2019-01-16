@@ -52,7 +52,7 @@ def process_send_notifications():
         update(insert_q)
         # Conditional on above query?
         helpers.log("setting bericht as sent")
-        insert_q2 = construct_mail_sent_query(SYSTEM_EMAIL_GRAPH, bericht['bericht']['value'], email['uuid'])
+        insert_q2 = construct_mail_sent_query(SYSTEM_EMAIL_GRAPH, MESSAGE_GRAPH_PATTERN_START, MESSAGE_GRAPH_PATTERN_END, bericht['bericht']['value'], email['uuid'])
         update(insert_q2)
 
 def query(the_query):

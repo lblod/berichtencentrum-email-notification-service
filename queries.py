@@ -46,7 +46,7 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
     """.format(message_graph_pattern_start, message_graph_pattern_end, oldest)
     return q
 
-def construct_mail_sent_query(graph_uri, bericht_uri, email_uuid):
+def construct_mail_sent_query(graph_uri, message_graph_pattern_start, message_graph_pattern_end, bericht_uri, email_uuid):
     """
     Construct a query for marking that a mail notification for a bericht has been sent.
 
@@ -62,21 +62,21 @@ def construct_mail_sent_query(graph_uri, bericht_uri, email_uuid):
 
     INSERT {{
         GRAPH ?g {{
-            <{1}> ext:notificatieEmail ?email. # TODO: predicate?
+            <{3}> ext:notificatieEmail ?email. # TODO: predicate?
         }}
     }}
     WHERE {{
         GRAPH <{0}> {{
             ?email a nmo:Email.
-            ?email <http://mu.semte.ch/vocabularies/core/uuid> "{2}".
+            ?email <http://mu.semte.ch/vocabularies/core/uuid> "{4}".
         }}
         GRAPH ?g {{
-            <{1}> a schema:Message.
+            <{3}> a schema:Message.
         }}
-        FILTER(STRSTARTS(STR(?g), "http://mu.semte.ch/graphs/organizations/"))
-        FILTER(STRENDS(STR(?g), "/LoketLB-berichtenGebruiker"))
+        FILTER(STRSTARTS(STR(?g), "{1}"))
+        FILTER(STRENDS(STR(?g), "{2}"))
     }}
-    """.format(graph_uri, bericht_uri, email_uuid)
+    """.format(graph_uri, message_graph_pattern_start, message_graph_pattern_end, bericht_uri, email_uuid)
     return q
 
 def construct_mail_query(graph_uri, email, outbox_folder_uri):
