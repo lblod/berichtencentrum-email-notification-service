@@ -61,27 +61,17 @@ def construct_mail_sent_query(graph_uri, message_graph_pattern_start, message_gr
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 
     INSERT {{
-<<<<<<< Updated upstream
         GRAPH ?g {{
             <{3}> ext:notificatieEmail ?email. # TODO: predicate?
-=======
-        GRAPH <{0}> {{
-            <{1}> ext:notificatieEmail <{2}>. # TODO: predicate?
->>>>>>> Stashed changes
         }}
     }}
     WHERE {{
         GRAPH <{0}> {{
-<<<<<<< Updated upstream
             ?email a nmo:Email.
             ?email <http://mu.semte.ch/vocabularies/core/uuid> "{4}".
         }}
         GRAPH ?g {{
             <{3}> a schema:Message.
-=======
-            <{1}> a schema:Message.
-            <{2}> a nmo:Email.
->>>>>>> Stashed changes
         }}
         FILTER(STRSTARTS(STR(?g), "{1}"))
         FILTER(STRENDS(STR(?g), "{2}"))
