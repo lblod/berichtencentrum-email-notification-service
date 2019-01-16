@@ -7,8 +7,8 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
     :param max_bericht_age: int, specifies how old a message (in days) can maximally be.
         In case the messages are older they are not considered, as the emails that were sent for them may be already deleted again for example.
     """
-    oldest = datetime.now() - timedelta(days=max_bericht_age)
-    oldest = oldest.isoformat()
+    oldest = datetime.utcnow() - timedelta(days=max_bericht_age)
+    oldest = oldest.isoformat() + 'Z'
     q = """
     PREFIX schema: <http://schema.org/>
     PREFIX besluit: <http://data.vlaanderen.be/ns/besluit#>
