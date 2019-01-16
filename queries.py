@@ -7,8 +7,8 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
     :param max_bericht_age: int, specifies how old a message (in days) can maximally be.
         In case the messages are older they are not considered, as the emails that were sent for them may be already deleted again for example.
     """
-    oldest = datetime.now() - timedelta(days=max_bericht_age)
-    oldest = oldest.isoformat()
+    oldest = datetime.utcnow() - timedelta(days=max_bericht_age)
+    oldest = oldest.isoformat() + 'Z'
     q = """
     PREFIX schema: <http://schema.org/>
     PREFIX besluit: <http://data.vlaanderen.be/ns/besluit#>
@@ -46,7 +46,7 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
     """.format(message_graph_pattern_start, message_graph_pattern_end, oldest)
     return q
 
-def construct_mail_sent_query(graph_uri, bericht_uri, email_uuid):
+def construct_mail_sent_query(graph_uri, message_graph_pattern_start, message_graph_pattern_end, bericht_uri, email_uuid):
     """
     Construct a query for marking that a mail notification for a bericht has been sent.
 
@@ -61,23 +61,32 @@ def construct_mail_sent_query(graph_uri, bericht_uri, email_uuid):
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 
     INSERT {{
+<<<<<<< Updated upstream
         GRAPH ?g {{
-            ?bericht ext:notificatieEmail ?email. # TODO: predicate?
+            <{3}> ext:notificatieEmail ?email. # TODO: predicate?
+=======
+        GRAPH <{0}> {{
+            <{1}> ext:notificatieEmail <{2}>. # TODO: predicate?
+>>>>>>> Stashed changes
         }}
     }}
     WHERE {{
         GRAPH <{0}> {{
+<<<<<<< Updated upstream
             ?email a nmo:Email.
-            ?email <http://mu.semte.ch/vocabularies/core/uuid> "{2}".
+            ?email <http://mu.semte.ch/vocabularies/core/uuid> "{4}".
         }}
         GRAPH ?g {{
-            ?bericht a schema:Message.
-            BIND(IRI("{1}") AS ?bericht).
+            <{3}> a schema:Message.
+=======
+            <{1}> a schema:Message.
+            <{2}> a nmo:Email.
+>>>>>>> Stashed changes
         }}
-        FILTER(STRSTARTS(STR(?g), "http://mu.semte.ch/graphs/organizations/"))
-        FILTER(STRENDS(STR(?g), "/LoketLB-berichtenGebruiker"))
+        FILTER(STRSTARTS(STR(?g), "{1}"))
+        FILTER(STRENDS(STR(?g), "{2}"))
     }}
-    """.format(graph_uri, bericht_uri, email_uuid)
+    """.format(graph_uri, message_graph_pattern_start, message_graph_pattern_end, bericht_uri, email_uuid)
     return q
 
 def construct_mail_query(graph_uri, email, outbox_folder_uri):
@@ -99,7 +108,7 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
 
     INSERT {{
         GRAPH <{0}> {{
-            ?email a nmo:Email;
+            <{1[uri]}> a nmo:Email;
                 <http://mu.semte.ch/vocabularies/core/uuid> "{1[uuid]}";
                 nmo:messageFrom "{1[from]}";
                 nmo:emailTo "{1[to]}";
@@ -110,15 +119,13 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     else: #then at least plain text content should exist
         q += """nmo:plainTextMessageContent "{1[content]}";"""
     q += """
-                nmo:isPartOf ?outbox.
-            ?outbox email:hasEmail ?email.
+                nmo:isPartOf <{2}>.
+            <{2}> email:hasEmail <{1[uri]}>.
         }}
     }}
     WHERE {{
         GRAPH <{0}> {{
-            ?outbox a nfo:Folder.
-            BIND(IRI("{2}") AS ?outbox)
-            BIND(IRI(CONCAT("http://data.lblod.info/id/emails/", "{1[uuid]}")) AS ?email)
+            <{2}> a nfo:Folder.
         }}
     }}
     """
