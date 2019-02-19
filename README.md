@@ -2,6 +2,19 @@
 
 Microservice to create notification emails for newly received messages in berichtencentrum. Fetches messages that need a notification to be sent, constructs email messages and places them in the correct outbox.
 
+## Installation
+To add the service to your stack, add the following snippet to `docker-compose.yml`:
+```
+services:
+  berichtencentrum-email-notification:
+    image: lblod/berichtencentrum-email-notification-service:latest
+    environment:
+      RUN_INTERVAL: 5
+      OUTBOX_FOLDER_URI: "http://data.lblod.info/id/mail-folders/2"
+      FROM_EMAIL_ADRESS: "Agentschap Binnenlands Bestuur Vlaanderen <noreply-binnenland@vlaanderen.be>"
+      LOKET_APP_BASEURL: "https://loket.lokaalbestuur.vlaanderen.be/"
+```
+
 ## Configuration
 
 ### Environment variables
@@ -9,7 +22,7 @@ Microservice to create notification emails for newly received messages in berich
 Required environment variables:
 
 * `FROM_EMAIL_ADDRESS`: The email address added in the 'from' header of the sent mail.
-* `LOKET_API_BASEURL`: Base URL of the loket API (so we can supply a working link to the message mentioned in the email)
+* `LOKET_APP_BASEURL`: Base URL of the loket app (so we can supply a working link to the message mentioned in the email)
 * `OUTBOX_FOLDER_URI`: URI of the email outbox folder in which the prepared messages must be stored.
 
 Optional environment variables:
