@@ -13,7 +13,7 @@ MESSAGE_GRAPH_PATTERN_START = "http://mu.semte.ch/graphs/organizations/"
 MESSAGE_GRAPH_PATTERN_END = "/LoketLB-berichtenGebruiker"
 SYSTEM_EMAIL_GRAPH = "http://mu.semte.ch/graphs/system/email"
 OUTBOX_FOLDER_URI = os.environ.get('OUTBOX_FOLDER_URI')
-MAX_AGE = 60 #days
+MAX_AGE = int(os.environ.get('MAX_MESSAGE_AGE')) #days
 FROM_EMAIL_ADDRESS = os.environ.get('FROM_EMAIL_ADDRESS')
 LOKET_APP_BASEURL = os.environ.get('LOKET_APP_BASEURL')
 
