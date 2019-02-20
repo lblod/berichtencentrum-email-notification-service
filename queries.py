@@ -36,7 +36,6 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
         GRAPH ?g {{
             ?bericht a schema:Message;
                 schema:dateReceived ?ontvangen;
-                schema:text ?inhoud;
                 schema:sender ?van;
                 schema:recipient ?naar.
 
