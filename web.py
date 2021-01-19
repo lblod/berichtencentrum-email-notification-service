@@ -7,10 +7,8 @@ INTERVAL = 5 if os.environ.get('RUN_INTERVAL') is None else int(os.environ.get('
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=process_send_notifications, trigger="interval", minutes=INTERVAL)
-log("Registered a task for fetching and processing messages from Kalliope every {} minutes".format(INTERVAL))
-scheduler.start()
-
-
+# log("Registered a task for fetching and processing messages from Kalliope every {} minutes".format(INTERVAL))
+# scheduler.start()
 
 ################# TEMP: test routes ############################################
 
@@ -23,14 +21,16 @@ from .mocks import mock_email
 ABB_URI = "http://data.lblod.info/id/bestuurseenheden/141d9d6b-54af-4d17-b313-8d1c30bc3f5b"
 MESSAGE_GRAPH_PATTERN_START = "http://mu.semte.ch/graphs/organizations/"
 MESSAGE_GRAPH_PATTERN_END = "/LoketLB-berichtenGebruiker"
-MAX_AGE = int(os.environ.get('MAX_MESSAGE_AGE')) #days
+MAX_AGE = os.environ.get('MAX_MESSAGE_AGE') or 1 # days
 SYSTEM_EMAIL_GRAPH = "http://mu.semte.ch/graphs/system/email"
 OUTBOX_FOLDER_URI = os.environ.get('OUTBOX_FOLDER_URI') or "http://data.lblod.info/id/mail-folders/2"
 
+
 @app.route('/needs_mail/')
 def needs_mail():
-    q = construct_needs_mail_query(MESSAGE_GRAPH_PATTERN_START, MESSAGE_GRAPH_PATTERN_END, MAX_AGE)
+    q = construct_needs_mail_query(MESSAGE_GRAPH_PATTERN_START, MESSAGE_GRAPH_PATTERN_END, int(MAX_AGE))
     return flask.jsonify(helpers.query(q))
+
 
 @app.route("/mock_insert")
 def mock():
