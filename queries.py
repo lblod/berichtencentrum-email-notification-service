@@ -5,7 +5,9 @@ import escape_helpers
 
 TIMEZONE = timezone('Europe/Brussels')
 
-def construct_needs_mail_query(message_graph_pattern_start, message_graph_pattern_end, bestuurseenheid_graph, max_bericht_age=7):
+
+def construct_needs_mail_query(message_graph_pattern_start, message_graph_pattern_end, bestuurseenheid_graph,
+                               max_bericht_age=7):
     """
     Construct a query for retrieving all berichten that require a mail notification to be sent for.
 
@@ -57,6 +59,7 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
     """.format(message_graph_pattern_start, message_graph_pattern_end, bestuurseenheid_graph, oldest)
     return q
 
+
 def construct_mail_sent_query(graph_uri, bestuurseenheid_graph_uri, bericht_uri, email_uuid):
     """
     Construct a query for marking that a mail notification for a bericht has been sent.
@@ -88,6 +91,7 @@ def construct_mail_sent_query(graph_uri, bestuurseenheid_graph_uri, bericht_uri,
     """.format(graph_uri, bestuurseenheid_graph_uri, bericht_uri, email_uuid)
     return q
 
+
 def construct_mail_query(graph_uri, email, outbox_folder_uri):
     """
     Construct a query for creating a new email and linking it to the right outbox. This way the mail will be
@@ -98,15 +102,16 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     :param outbox_folder_uri: string
     :returns: string containing SPARQL query 
     """
-    email = copy.deepcopy(email) # For not modifying the pass-by-name original
+    email = copy.deepcopy(email)  # For not modifying the pass-by-name original
     email['from'] = escape_helpers.sparql_escape_string(email['from'])
     email['to'] = escape_helpers.sparql_escape_string(email['to'])
     email['subject'] = escape_helpers.sparql_escape_string(email['subject'])
     if 'html_content' in email:
-        email['html_content'] = '""' + escape_helpers.sparql_escape_string(email['html_content']) + '""' # NOTE: Make string triple quoted
-    else: #then at least plain text content should exist
+        email['html_content'] = '""' + escape_helpers.sparql_escape_string(
+            email['html_content']) + '""'  # NOTE: Make string triple quoted
+    else:  # then at least plain text content should exist
         email['content'] = escape_helpers.sparql_escape_string(email['content'])
-    
+
     q = """
     PREFIX schema: <http://schema.org/>
     PREFIX nmo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nmo#>
@@ -122,9 +127,14 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
                 nmo:emailTo {1[to]};
                 nmo:messageSubject {1[subject]};
     """
+    if 'bcc' in email:
+        email['bcc'] = escape_helpers.sparql_escape_string(email['bcc'])
+        q += """
+        nmo:emailBcc {1[bcc]};
+        """
     if 'html_content' in email:
         q += """nmo:htmlMessageContent {1[html_content]};"""
-    else: #then at least plain text content should exist
+    else:  # then at least plain text content should exist
         q += """nmo:plainTextMessageContent {1[content]};"""
     q += """
                 nmo:isPartOf <{2}>.

@@ -15,6 +15,7 @@ SYSTEM_EMAIL_GRAPH = "http://mu.semte.ch/graphs/system/email"
 OUTBOX_FOLDER_URI = os.environ.get('OUTBOX_FOLDER_URI')
 MAX_AGE = 3 if int(os.environ.get('MAX_MESSAGE_AGE')) is None else int(os.environ.get('MAX_MESSAGE_AGE')) #days
 FROM_EMAIL_ADDRESS = os.environ.get('FROM_EMAIL_ADDRESS')
+BCC_EMAIL_ADDRESSES = os.environ.get('BCC_EMAIL_ADDRESSES')
 LOKET_APP_BASEURL = os.environ.get('LOKET_APP_BASEURL')
 
 def new_email(email_from, to, subject, content):
@@ -51,6 +52,7 @@ def process_send_notifications():
         email = new_email(FROM_EMAIL_ADDRESS, bericht['mailadres']['value'], subject, content)
         email['html_content'] = email_html_template({'link': link, 'bestuurseenheid-naam': bericht['bestuurseenheidnaam']['value']})
         email['uri'] = "http://data.lblod.info/id/emails/{}".format(email['uuid'])
+        email['bcc'] = BCC_EMAIL_ADDRESSES
         helpers.log("placing bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(SYSTEM_EMAIL_GRAPH, email, OUTBOX_FOLDER_URI)
         # helpers.log(insert_q)
