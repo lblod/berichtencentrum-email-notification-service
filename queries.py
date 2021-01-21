@@ -107,8 +107,7 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     email['to'] = escape_helpers.sparql_escape_string(email['to'])
     email['subject'] = escape_helpers.sparql_escape_string(email['subject'])
     if 'html_content' in email:
-        email['html_content'] = '""' + escape_helpers.sparql_escape_string(
-            email['html_content']) + '""'  # NOTE: Make string triple quoted
+        email['html_content'] = escape_helpers.sparql_escape_string(email['html_content'])
     else:  # then at least plain text content should exist
         email['content'] = escape_helpers.sparql_escape_string(email['content'])
 
