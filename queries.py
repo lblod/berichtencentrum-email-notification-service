@@ -54,6 +54,7 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
         }}
         FILTER(STRSTARTS(STR(?g), "{0}"))
         FILTER(STRENDS(STR(?g), "{1}"))
+        FILTER(STRENDS(STR(?h), "{1}"))
         BIND(CONCAT(?label, " ", ?naam) as ?bestuurseenheidnaam)
     }}
     """.format(message_graph_pattern_start, message_graph_pattern_end, bestuurseenheid_graph, oldest)
