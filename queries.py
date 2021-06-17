@@ -7,7 +7,7 @@ TIMEZONE = timezone('Europe/Brussels')
 
 
 def construct_needs_mail_query(message_graph_pattern_start, message_graph_pattern_end, bestuurseenheid_graph,
-                               max_bericht_age=7):
+                              max_bericht_age=7):
     """
     Construct a query for retrieving all berichten that require a mail notification to be sent for.
 
@@ -110,7 +110,7 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     if 'html_content' in email:
         email['html_content'] = escape_helpers.sparql_escape_string(email['html_content'])
     else:  # then at least plain text content should exist
-        email['content'] = escape_helpers.sparql_escape_string(email['content'])
+        email['content'] = escape_helpers.sparql_escape_string(email['content']) 
 
     q = """
     PREFIX schema: <http://schema.org/>
@@ -148,4 +148,39 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     }}
     """
     q = q.format(graph_uri, email, outbox_folder_uri)
+    return q
+
+def find_kalliope_mail(bestuurseenheid_graph, max_bericht_age=7):
+    oldest = datetime.now(tz=TIMEZONE) - timedelta(days=max_bericht_age)
+    oldest = oldest.replace(microsecond=0).isoformat()
+    bestuurseenheid_graph = escape_helpers.sparql_escape_uri(bestuurseenheid_graph)
+    q = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+        SELECT DISTINCT ?dossiernummer ?bericht ?betreft ?inhoud ?verzendDatum ?verzender ?van ?ontvanger ?ontvangDatum ?mailadres
+        WHERE {{
+            GRAPH ?g {{
+                ?conversatie a schema:Conversation;
+                    schema:identifier ?dossiernummer;
+                    schema:about ?betreft;
+                    schema:hasPart ?bericht.
+                ?bericht a schema:Message;
+                    <http://mu.semte.ch/vocabularies/core/uuid> ?uuid;
+                    schema:dateSent ?verzendDatum;
+                    schema:text ?inhoud;
+                    schema:sender ?van;
+                    schema:recipient ?naar;
+                    schema:dateReceived ?ontvangDatum;
+                    ext:heeftBehandelaar ?behandelaar.
+
+                ?behandelaar schema:email ?mailadres.
+            }}
+          ?van skos:prefLabel ?verzender.
+          ?naar skos:prefLabel ?ontvanger.
+          FILTER (?ontvangDatum > "{0}"^^xsd:dateTime)
+        }}
+        ORDER BY DESC(?verzonden)
+        LIMIT 200
+    """.format(oldest)
     return q
