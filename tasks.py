@@ -73,7 +73,7 @@ def send_confirmation_notifications():
     :returns ?:
     """
     helpers.log("fetching messages that need a confirmation notification to be sent ...")
-    q = find_kalliope_mail(PUBLIC_GRAPH, 70)
+    q = find_kalliope_mail(MESSAGE_GRAPH_PATTERN_START, MESSAGE_GRAPH_PATTERN_END, PUBLIC_GRAPH, MAX_AGE)
     berichten = query(q)['results']['bindings']
     helpers.log("found {} berichten. Processing ...".format(len(berichten)))
     if berichten: # Prepare email template
@@ -86,7 +86,7 @@ def send_confirmation_notifications():
     for bericht in berichten:
         subject = "Confirmatie {0}: '{1}' - Uw bericht is succesvol toegekomen in het berichtencentrum van {2}  ".format(bericht['dossiernummer']['value'], bericht['betreft']['value'], bericht['ontvanger']['value'])
         content = None # NOTE: Not used, we use html_content
-        email = new_email("noreply@test.test", bericht['mailadres']['value'], subject, content) 
+        email = new_email(FROM_EMAIL_ADDRESS, bericht['mailadres']['value'], subject, content) 
         email['html_content'] = email_html_template({ 
           'bestuurseenheid-naam': bericht['ontvanger']['value'],
           'verzend-datum': bericht['verzendDatum']['value'],
@@ -98,6 +98,12 @@ def send_confirmation_notifications():
         email['bcc'] = BCC_EMAIL_ADDRESSES
         helpers.log("placing bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(SYSTEM_EMAIL_GRAPH, email, OUTBOX_FOLDER_URI)
-        helpers.log(insert_q)
-        update(insert_q) 
+        helpers.log(insert_q) 
+        update(insert_q)
 
+        bestuurseenheid_uuid = bericht['naar']['value'].split('/')[-1] # NOTE: Add graph as argument to query because Virtuoso
+        bestuurseenheid_graph = "http://mu.semte.ch/graphs/organizations/{}/LoketLB-berichtenGebruiker".format(bestuurseenheid_uuid)
+        insert_q2 = construct_mail_sent_query(SYSTEM_EMAIL_GRAPH, bestuurseenheid_graph, bericht['bericht']['value'], email['uuid'])
+        # helpers.log(insert_q2)
+        update(insert_q2)
+ 
