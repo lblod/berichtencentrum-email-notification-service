@@ -38,7 +38,7 @@ def process_send_notifications():
     helpers.log("fetching messages that need a notification to be sent ...")
     q = construct_needs_mail_query(MESSAGE_GRAPH_PATTERN_START, MESSAGE_GRAPH_PATTERN_END, PUBLIC_GRAPH, MAX_AGE) #?bericht ?conversatieuuid ?van ?ontvangen ?dossiernummer ?betreft ?mailadres
     berichten = query(q)['results']['bindings']
-    helpers.log("found {} berichten. Processing ...".format(len(berichten)))
+    helpers.log("found {} berichten that need a user notification. Processing ...".format(len(berichten)))
     if berichten: # Prepare email template
         here = os.path.dirname(os.path.realpath(__file__))
         templatepath = os.path.join(here, 'templates/nieuw_bericht.hbs')
@@ -54,7 +54,7 @@ def process_send_notifications():
         email['html_content'] = email_html_template({'link': link, 'bestuurseenheid-naam': bericht['bestuurseenheidnaam']['value']})
         email['uri'] = "http://data.lblod.info/id/emails/{}".format(email['uuid'])
         email['bcc'] = BCC_EMAIL_ADDRESSES
-        helpers.log("placing bericht '{}' into outbox".format(subject))
+        helpers.log("placing user notification bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(SYSTEM_EMAIL_GRAPH, email, OUTBOX_FOLDER_URI)
         # helpers.log(insert_q)
         update(insert_q)
@@ -75,7 +75,7 @@ def send_confirmation_notifications():
     helpers.log("fetching messages that need a confirmation notification to be sent ...")
     q = find_kalliope_mail(MESSAGE_GRAPH_PATTERN_START, MESSAGE_GRAPH_PATTERN_END, PUBLIC_GRAPH, MAX_AGE)
     berichten = query(q)['results']['bindings']
-    helpers.log("found {} berichten. Processing ...".format(len(berichten)))
+    helpers.log("found {} berichten that need a confirmation notification. Processing ...".format(len(berichten)))
     if berichten: # Prepare email template
       here = os.path.dirname(os.path.realpath(__file__)) 
       templatepath = os.path.join(here, 'templates/confirmatie_bericht.hbs')
@@ -96,7 +96,7 @@ def send_confirmation_notifications():
         
         email['uri'] = "http://data.lblod.info/id/emails/{}".format(email['uuid']) 
         email['bcc'] = BCC_EMAIL_ADDRESSES
-        helpers.log("placing bericht '{}' into outbox".format(subject))
+        helpers.log("placing confirmation notification bericht for '{}' into outbox".format(subject))
         insert_q = construct_mail_query(SYSTEM_EMAIL_GRAPH, email, OUTBOX_FOLDER_URI)
         helpers.log(insert_q) 
         update(insert_q)
