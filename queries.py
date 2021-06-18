@@ -158,7 +158,7 @@ def find_kalliope_mail(message_graph_pattern_start, message_graph_pattern_end, b
         PREFIX schema: <http://schema.org/>
         PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
         PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-        SELECT DISTINCT ?dossiernummer ?bericht ?betreft ?inhoud ?verzendDatum ?verzender ?van ?ontvanger ?ontvangDatum ?mailadres
+        SELECT DISTINCT ?dossiernummer ?bericht ?betreft ?inhoud ?verzendDatum ?verzender ?van ?naar ?ontvanger ?ontvangDatum ?mailadres
         WHERE {{
             GRAPH ?g {{
                 ?conversatie a schema:Conversation;
@@ -175,14 +175,48 @@ def find_kalliope_mail(message_graph_pattern_start, message_graph_pattern_end, b
                     ext:heeftBehandelaar ?behandelaar.
 
                 ?behandelaar schema:email ?mailadres.
+                
             }}
           ?van skos:prefLabel ?verzender.
           ?naar skos:prefLabel ?ontvanger.
-          FILTER (?ontvangDatum > "{0}"^^xsd:dateTime)
+          FILTER NOT EXISTS {{ ?bericht ext:notificatieEmail ?email. }}  # TODO: predicate?
+          FILTER (?ontvangDatum > "{2}"^^xsd:dateTime)
           FILTER(STRSTARTS(STR(?g), "{0}"))
           FILTER(STRENDS(STR(?g), "{1}"))
         }}
         ORDER BY DESC(?verzonden)
         LIMIT 200
-    """.format(oldest)
+    """.format(message_graph_pattern_start, message_graph_pattern_end, oldest)
     return q
+
+def construct_confirmation_mail_sent_query(graph_uri, bestuurseenheid_graph_uri, bericht_uri, email_uuid):
+    """
+    Construct a query for marking that a mail notification for a bericht has been sent.
+
+    :param graph_uri: string
+    :param bericht_uri: string
+    :param email_uri: string
+    :returns: string containing SPARQL query
+    """
+    q = """
+    PREFIX schema: <http://schema.org/>
+    PREFIX nmo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nmo#>
+    PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+
+    INSERT {{
+        GRAPH <{1}> {{
+            <{2}> ext:notificatieEmail ?email. # TODO: predicate?
+        }}
+    }}
+    WHERE {{
+        GRAPH <{0}> {{
+            ?email a nmo:Email.
+            ?email <http://mu.semte.ch/vocabularies/core/uuid> "{3}".
+        }}
+        GRAPH <{1}> {{
+            <{2}> a schema:Message.
+        }}
+    }}
+    """.format(graph_uri, bestuurseenheid_graph_uri, bericht_uri, email_uuid)
+    return q
+
