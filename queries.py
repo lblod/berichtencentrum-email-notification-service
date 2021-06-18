@@ -150,7 +150,7 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     q = q.format(graph_uri, email, outbox_folder_uri)
     return q
 
-def find_kalliope_mail(bestuurseenheid_graph, max_bericht_age=7):
+def find_kalliope_mail(message_graph_pattern_start, message_graph_pattern_end, bestuurseenheid_graph, max_bericht_age=7):
     oldest = datetime.now(tz=TIMEZONE) - timedelta(days=max_bericht_age)
     oldest = oldest.replace(microsecond=0).isoformat()
     bestuurseenheid_graph = escape_helpers.sparql_escape_uri(bestuurseenheid_graph)
@@ -179,6 +179,8 @@ def find_kalliope_mail(bestuurseenheid_graph, max_bericht_age=7):
           ?van skos:prefLabel ?verzender.
           ?naar skos:prefLabel ?ontvanger.
           FILTER (?ontvangDatum > "{0}"^^xsd:dateTime)
+          FILTER(STRSTARTS(STR(?g), "{0}"))
+          FILTER(STRENDS(STR(?g), "{1}"))
         }}
         ORDER BY DESC(?verzonden)
         LIMIT 200
