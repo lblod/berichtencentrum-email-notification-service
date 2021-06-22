@@ -2,12 +2,18 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from helpers import log
 from .tasks import process_send_notifications
+from .tasks import send_confirmation_notifications
 
 INTERVAL = 5 if os.environ.get('RUN_INTERVAL') is None else int(os.environ.get('RUN_INTERVAL'))
 
 scheduler = BackgroundScheduler()
+
 scheduler.add_job(func=process_send_notifications, trigger="interval", minutes=INTERVAL)
 log("Registered a task for fetching and processing messages from Kalliope every {} minutes".format(INTERVAL))
+
+scheduler.add_job(func=send_confirmation_notifications, trigger="interval", minutes=INTERVAL)
+log("Registered a task for fetching and confirming messages from Kalliope every {} minutes".format(INTERVAL))
+
 scheduler.start()
 
 

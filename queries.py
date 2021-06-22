@@ -7,7 +7,7 @@ TIMEZONE = timezone('Europe/Brussels')
 
 
 def construct_needs_mail_query(message_graph_pattern_start, message_graph_pattern_end, bestuurseenheid_graph,
-                               max_bericht_age=7):
+                              max_bericht_age=7):
     """
     Construct a query for retrieving all berichten that require a mail notification to be sent for.
 
@@ -110,7 +110,7 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     if 'html_content' in email:
         email['html_content'] = escape_helpers.sparql_escape_string(email['html_content'])
     else:  # then at least plain text content should exist
-        email['content'] = escape_helpers.sparql_escape_string(email['content'])
+        email['content'] = escape_helpers.sparql_escape_string(email['content']) 
 
     q = """
     PREFIX schema: <http://schema.org/>
@@ -149,3 +149,74 @@ def construct_mail_query(graph_uri, email, outbox_folder_uri):
     """
     q = q.format(graph_uri, email, outbox_folder_uri)
     return q
+
+def find_kalliope_mail(message_graph_pattern_start, message_graph_pattern_end, bestuurseenheid_graph, max_bericht_age=7):
+    oldest = datetime.now(tz=TIMEZONE) - timedelta(days=max_bericht_age)
+    oldest = oldest.replace(microsecond=0).isoformat()
+    bestuurseenheid_graph = escape_helpers.sparql_escape_uri(bestuurseenheid_graph)
+    q = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+        SELECT DISTINCT ?dossiernummer ?bericht ?betreft ?inhoud ?verzendDatum ?verzender ?van ?naar ?ontvanger ?ontvangDatum ?mailadres
+        WHERE {{
+            GRAPH ?g {{
+                ?conversatie a schema:Conversation;
+                    schema:identifier ?dossiernummer;
+                    schema:about ?betreft;
+                    schema:hasPart ?bericht.
+                ?bericht a schema:Message;
+                    <http://mu.semte.ch/vocabularies/core/uuid> ?uuid;
+                    schema:dateSent ?verzendDatum;
+                    schema:text ?inhoud;
+                    schema:sender ?van;
+                    schema:recipient ?naar;
+                    schema:dateReceived ?ontvangDatum;
+                    ext:heeftBehandelaar ?behandelaar.
+
+                ?behandelaar schema:email ?mailadres.
+                
+            }}
+          ?van skos:prefLabel ?verzender.
+          ?naar skos:prefLabel ?ontvanger.
+          FILTER NOT EXISTS {{ ?bericht ext:notificatieEmail ?email. }}  # TODO: predicate?
+          FILTER (?ontvangDatum > "{2}"^^xsd:dateTime)
+          FILTER(STRSTARTS(STR(?g), "{0}"))
+          FILTER(STRENDS(STR(?g), "{1}"))
+        }}
+        ORDER BY DESC(?verzonden)
+        LIMIT 200
+    """.format(message_graph_pattern_start, message_graph_pattern_end, oldest)
+    return q
+
+def construct_confirmation_mail_sent_query(graph_uri, bestuurseenheid_graph_uri, bericht_uri, email_uuid):
+    """
+    Construct a query for marking that a mail notification for a bericht has been sent.
+
+    :param graph_uri: string
+    :param bericht_uri: string
+    :param email_uri: string
+    :returns: string containing SPARQL query
+    """
+    q = """
+    PREFIX schema: <http://schema.org/>
+    PREFIX nmo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nmo#>
+    PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+
+    INSERT {{
+        GRAPH <{1}> {{
+            <{2}> ext:notificatieEmail ?email. # TODO: predicate?
+        }}
+    }}
+    WHERE {{
+        GRAPH <{0}> {{
+            ?email a nmo:Email.
+            ?email <http://mu.semte.ch/vocabularies/core/uuid> "{3}".
+        }}
+        GRAPH <{1}> {{
+            <{2}> a schema:Message.
+        }}
+    }}
+    """.format(graph_uri, bestuurseenheid_graph_uri, bericht_uri, email_uuid)
+    return q
+
