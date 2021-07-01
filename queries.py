@@ -12,7 +12,10 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
     Construct a query for retrieving all berichten that require a mail notification to be sent for.
 
     :param max_bericht_age: int, specifies how old a message (in days) can maximally be.
-        In case the messages are older they are not considered, as the emails that were sent for them may be already deleted again for example.
+        In case the messages are older they are not considered,
+        as the emails that were sent for them may be already deleted again for example.
+
+    Note: the API assumes only one emailBehandelaar per bericht
     """
     oldest = datetime.now(tz=TIMEZONE) - timedelta(days=max_bericht_age)
     oldest = oldest.replace(microsecond=0).isoformat()
@@ -24,7 +27,7 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-    SELECT ?bericht ?van ?naar ?bestuurseenheidnaam ?ontvangen ?dossiernummer ?conversatieuuid ?betreft ?mailadres
+    SELECT DISTINCT ?bericht ?van ?naar ?bestuurseenheidnaam ?ontvangen ?dossiernummer ?conversatieuuid ?betreft ?mailadres ?emailBehandelaar
     WHERE {{
         GRAPH ?i {{
             ?naar a besluit:Bestuurseenheid;
@@ -40,6 +43,11 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
                 schema:dateReceived ?ontvangen;
                 schema:sender ?van;
                 schema:recipient ?naar.
+
+            OPTIONAL {{
+              ?bericht ext:heeftBehandelaar ?behandelaar.
+              ?behandelaar schema:email ?emailBehandelaar.
+            }}
 
             ?conversatie a schema:Conversation;
                 <http://mu.semte.ch/vocabularies/core/uuid> ?conversatieuuid;

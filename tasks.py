@@ -16,6 +16,7 @@ FROM_EMAIL_ADDRESS = os.environ.get('FROM_EMAIL_ADDRESS')
 BCC_EMAIL_ADDRESSES = os.environ.get('BCC_EMAIL_ADDRESSES')
 LOKET_APP_BASEURL = os.environ.get('LOKET_APP_BASEURL')
 
+
 def new_email(email_from, to, subject, content):
     email = {}
     email['uuid'] = helpers.generate_uuid()
@@ -24,6 +25,7 @@ def new_email(email_from, to, subject, content):
     email['subject'] = subject
     email['content'] = content
     return email
+
 
 def process_send_notifications():
     """
@@ -50,7 +52,20 @@ def process_send_notifications():
         email = new_email(FROM_EMAIL_ADDRESS, bericht['mailadres']['value'], subject, content)
         email['html_content'] = email_html_template({'link': link, 'bestuurseenheid-naam': bericht['bestuurseenheidnaam']['value']})
         email['uri'] = "http://data.lblod.info/id/emails/{}".format(email['uuid'])
-        email['bcc'] = BCC_EMAIL_ADDRESSES
+
+        # some boilerplate to try to deal with eventual malformatted BCC_EMAIL_ADDRESSES
+        bcc_adresses = []
+
+        if BCC_EMAIL_ADDRESSES:
+            bcc_adresses = BCC_EMAIL_ADDRESSES.split(',')
+
+        if bericht.get('emailBehandelaar', {}).get('value'):
+            bcc_adresses.append(bericht.get('emailBehandelaar', {}).get('value'))
+
+        email['bcc'] = ','.join([addr for addr in bcc_adresses if addr])
+
+        helpers.log("The following addresses are in BCC: {}".format(email['bcc']))
+
         helpers.log("placing user notification bericht '{}' into outbox".format(subject))
         insert_q = construct_mail_query(SYSTEM_EMAIL_GRAPH, email, OUTBOX_FOLDER_URI)
         # helpers.log(insert_q)
