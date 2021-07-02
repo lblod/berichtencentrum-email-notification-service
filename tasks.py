@@ -13,7 +13,7 @@ SYSTEM_EMAIL_GRAPH = "http://mu.semte.ch/graphs/system/email"
 OUTBOX_FOLDER_URI = os.environ.get('OUTBOX_FOLDER_URI')
 MAX_AGE = 3 if int(os.environ.get('MAX_MESSAGE_AGE')) is None else int(os.environ.get('MAX_MESSAGE_AGE')) #days
 FROM_EMAIL_ADDRESS = os.environ.get('FROM_EMAIL_ADDRESS')
-BCC_EMAIL_ADDRESSES = os.environ.get('BCC_EMAIL_ADDRESSES')
+BCC_EMAIL_ADDRESSES = os.environ.get('BCC_EMAIL_ADDRESSES', '')
 LOKET_APP_BASEURL = os.environ.get('LOKET_APP_BASEURL')
 
 
