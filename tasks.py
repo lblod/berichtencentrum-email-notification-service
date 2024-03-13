@@ -59,8 +59,9 @@ def process_send_notifications():
         if BCC_EMAIL_ADDRESSES:
             bcc_adresses = BCC_EMAIL_ADDRESSES.split(',')
 
-        if bericht.get('emailBehandelaar', {}).get('value'):
-            bcc_adresses.append(bericht.get('emailBehandelaar', {}).get('value'))
+        if bericht.get('typecommunicatie').get('value') != "Omzendbrief":
+            if bericht.get('emailBehandelaar', {}).get('value'):
+                bcc_adresses.append(bericht.get('emailBehandelaar', {}).get('value'))
 
         email['bcc'] = ','.join([addr for addr in bcc_adresses if addr])
 
