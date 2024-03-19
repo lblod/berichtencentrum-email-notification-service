@@ -27,7 +27,7 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-    SELECT DISTINCT ?bericht ?van ?naar ?bestuurseenheidnaam ?ontvangen ?dossiernummer ?conversatieuuid ?betreft ?mailadres ?emailBehandelaar
+    SELECT DISTINCT ?bericht ?van ?naar ?bestuurseenheidnaam ?ontvangen ?dossiernummer ?conversatieuuid ?betreft ?mailadres ?emailBehandelaar ?typecommunicatie
     WHERE {{
         GRAPH ?i {{
             ?naar a besluit:Bestuurseenheid;
