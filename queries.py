@@ -42,7 +42,8 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
             ?bericht a schema:Message;
                 schema:dateReceived ?ontvangen;
                 schema:sender ?van;
-                schema:recipient ?naar.
+                schema:recipient ?naar;
+                <http://purl.org/dc/terms/type> ?typecommunicatie.
 
             OPTIONAL {{
               ?bericht ext:heeftBehandelaar ?behandelaar.
@@ -53,7 +54,6 @@ def construct_needs_mail_query(message_graph_pattern_start, message_graph_patter
                 <http://mu.semte.ch/vocabularies/core/uuid> ?conversatieuuid;
                 schema:identifier ?dossiernummer;
                 schema:about ?betreft;
-                #<http://purl.org/dc/terms/type> ?typecommunicatie;
                 #schema:processingTime ?reactietermijn;
                 schema:hasPart ?bericht.
 
