@@ -46,11 +46,13 @@ def process_send_notifications():
             precompiled = compiler.precompile(email_template_file.read())
             email_html_template = compiler.template(precompiled)
     for bericht in berichten:
-        subject = "Dossier {}:'{}' - Nieuw bericht".format(bericht['dossiernummer']['value'], bericht['betreft']['value'])
+        subject = "Dossier {}: '{}' - Nieuw bericht: {}".format(bericht['dossiernummer']['value'], bericht['betreft']['value'], bericht['typecommunicatie']['value'])
         link = "{}/berichtencentrum/berichten/{}".format(LOKET_APP_BASEURL.strip('/'), bericht['conversatieuuid']['value'])
         content = None # NOTE: Not used, we use html_content
         email = new_email(FROM_EMAIL_ADDRESS, bericht['mailadres']['value'], subject, content)
-        email['html_content'] = email_html_template({'link': link, 'bestuurseenheid-naam': bericht['bestuurseenheidnaam']['value']})
+        email['html_content'] = email_html_template({'link': link, 'bestuurseenheid-naam': bericht['bestuurseenheidnaam']['value'],
+                                                     'dossiernummer': bericht['dossiernummer']['value'], 'betreft': bericht['betreft']['value'],
+                                                     'type-communicatie': bericht['typecommunicatie']['value'], 'datum': bericht['ontvangen']['value']})
         email['uri'] = "http://data.lblod.info/id/emails/{}".format(email['uuid'])
 
         # some boilerplate to try to deal with eventual malformatted BCC_EMAIL_ADDRESSES
