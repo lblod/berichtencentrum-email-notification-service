@@ -4,6 +4,7 @@ from .queries import construct_needs_mail_query
 from .queries import construct_mail_sent_query
 from .queries import construct_mail_query
 from pybars import Compiler
+from datetime import datetime
 
 ABB_URI = "http://data.lblod.info/id/bestuurseenheden/141d9d6b-54af-4d17-b313-8d1c30bc3f5b"
 PUBLIC_GRAPH = "http://mu.semte.ch/graphs/public"
@@ -49,10 +50,13 @@ def process_send_notifications():
         subject = "Dossier {}: '{}' - Nieuw bericht: {}".format(bericht['dossiernummer']['value'], bericht['betreft']['value'], bericht['typecommunicatie']['value'])
         link = "{}/berichtencentrum/berichten/{}".format(LOKET_APP_BASEURL.strip('/'), bericht['conversatieuuid']['value'])
         content = None # NOTE: Not used, we use html_content
+        raw_datum = bericht['ontvangen']['value']
+        dt = datetime.fromisoformat(raw_datum)
+        formatted_datum = dt.strftime("%d-%m-%Y %H:%M")
         email = new_email(FROM_EMAIL_ADDRESS, bericht['mailadres']['value'], subject, content)
         email['html_content'] = email_html_template({'link': link, 'bestuurseenheid-naam': bericht['bestuurseenheidnaam']['value'],
                                                      'dossiernummer': bericht['dossiernummer']['value'], 'betreft': bericht['betreft']['value'],
-                                                     'type-communicatie': bericht['typecommunicatie']['value'], 'datum': bericht['ontvangen']['value']})
+                                                     'type-communicatie': bericht['typecommunicatie']['value'], 'datum': formatted_datum})
         email['uri'] = "http://data.lblod.info/id/emails/{}".format(email['uuid'])
 
         # some boilerplate to try to deal with eventual malformatted BCC_EMAIL_ADDRESSES
