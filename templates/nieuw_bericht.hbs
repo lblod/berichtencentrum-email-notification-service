@@ -14,7 +14,15 @@
 <body>
   <p style="margin:0; font-family:sans-serif; letter-spacing:normal; line-height:1.6;">Beste</p><br /><br />
   <p style="margin:0; font-family:sans-serif; letter-spacing:normal; line-height:1.6;">Uw bestuur &quot;{{bestuurseenheid-naam}}&quot; heeft een nieuwe communicatie ontvangen via het <a href="http://loket.lokaalbestuur.vlaanderen.be" target="_blank">Loket voor Lokale Besturen</a>, module Berichtencentrum.</p><br />
-  <p><a href="{{link}}" target="_blank" style="letter-spacing:normal;line-height:100%;text-align:center;text-decoration:none;color:#ffffff;background-color:#1069C9;padding:15px 20px;font-size:16px;border:none;cursor:pointer; font-family:sans-serif;">Bekijk nieuw bericht</a></p><br /><br />
+  <table role="presentation" cellpadding="10" cellspacing="0" border="1" style="border-collapse: collapse; width: 100%; font-family: sans-serif; font-size: 14px;">
+  <thead>
+    <tr style="background-color: #f0f0f0;"><th colspan="2" style="text-align: left; font-weight: bold; padding: 10px;">Details voor bericht
+      </th></tr></thead><tbody><tr><td style="vertical-align: top; width: 80%; white-space: normal; padding: 10px;">
+        <strong>Nieuw bericht:</strong> Dossiernummer: <em>{{dossiernummer}}</em>: ‘<em>{{betreft}}</em>’ - <em>{{type-communicatie}}</em> verzonden door Agentschap Binnenlands Bestuur op<br />
+        <em>{{datum}}</em></td>
+      <td style="vertical-align: middle; text-align: center; width: 20%; white-space: nowrap; padding: 10px;">
+        <a href="{{link}}" target="_blank" style="text-decoration:none; color:#1069C9; font-weight: bold; cursor: pointer;">
+          Bekijk nieuw bericht </a></td></tr></tbody></table><br />
   <p style="margin:0; font-family:sans-serif; letter-spacing:normal; line-height:1.6;">De Vlaamse overheid zet verder in op digitalisering. We streven ernaar om zo veel mogelijk digitaal te communiceren via het Loket voor Lokale Besturen (module Berichtencentrum). Meer info hierover vindt u op onze <a href="https://www.vlaanderen.be/lokaal-bestuur/loket-voor-lokale-besturen/berichtencentrum" target="_blank">webpagina</a>.</p><br />
   <p style="margin:0; font-family:sans-serif; letter-spacing:normal; line-height:1.6;">Indien uw bestuur moet reageren op deze communicatie, moet dat ook in deze toepassing (module Berichtencentrum) gebeuren, via de knop “Plaats reactie”.</p><br />
   <p style="margin:0; font-family:sans-serif; letter-spacing:normal; line-height:1.6;">Met Vriendelijke Groet</p>
