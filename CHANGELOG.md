@@ -1,4 +1,6 @@
 # Changelog
+## v0.5.2 (2025-07-17)
+- Updated `.woodpecker` config. (another attempt)
 ## v0.5.1 (2025-07-17)
 - Updated `.woodpecker` config.
 ## v0.5.0 (2025-07-16)
