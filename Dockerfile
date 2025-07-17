@@ -1,4 +1,4 @@
-FROM mikidi/mu-python-template:python3-port
+FROM semtech/mu-python-template:2.0.0-beta.3
 LABEL maintainer="info@redpencil.io"
 
 ENV MU_APPLICATION_GRAPH "http://mu.semte.ch/graphs/public"
