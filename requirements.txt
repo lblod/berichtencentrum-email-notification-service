@@ -1,2 +1,3 @@
-apscheduler
-pybars3
+APScheduler==3.11.0
+pybars3==0.9.7
+pytz==2025.2
